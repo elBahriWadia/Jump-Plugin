@@ -6,6 +6,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jumpplugin.JumpPlugin;
 
+import java.util.HashMap;
+
 public class JumpCommand implements CommandExecutor {
 
     private final JumpPlugin plugin;
@@ -24,8 +26,28 @@ public class JumpCommand implements CommandExecutor {
 
         Player player = (Player) sender;
 
-        plugin.getDataManager().set("players." + player.getName(), player.getName());
-        player.sendMessage("Saved your name to JSON!");
+        if (args.length == 0) {
+            player.sendMessage("Usage: /jump <create|setstart|setcheckpoint|setend>");
+            return true;
+        }
+
+        String subcommand = args[0].toLowerCase();
+
+        switch (subcommand) {
+            case "create":
+                if (args.length < 2) {
+                    player.sendMessage("Usage: /jump create <name>");
+                    return true;
+                }
+                String name = args[1];
+                plugin.getDataManager().set("courses." + name, new HashMap<>());
+                player.sendMessage("Course '" + name + "' created!");
+                break;
+
+            default:
+                player.sendMessage("Unknown subcommand.");
+                break;
+        }
 
 
         return true;
