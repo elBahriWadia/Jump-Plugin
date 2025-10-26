@@ -7,6 +7,7 @@ import org.bukkit.entity.Player;
 import org.jumpplugin.JumpPlugin;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class JumpCommand implements CommandExecutor {
 
@@ -36,17 +37,32 @@ public class JumpCommand implements CommandExecutor {
         switch (subcommand) {
             case "create":
                 if (args.length < 2) {
-                    player.sendMessage("Usage: /jump create <name>");
+                    player.sendMessage("§cUsage: /jump create <name>");
                     return true;
                 }
-                String name = args[1];
-                plugin.getDataManager().set("courses." + name, new HashMap<>());
-                player.sendMessage("Course '" + name + "' created!");
+
+                String name = args[1].toLowerCase(); // lowercase for consistency
+
+                // Load current data
+                Object coursesObj = plugin.getDataManager().get("courses");
+
+                if (coursesObj instanceof Map) {
+                    Map<String, Object> courses = (Map<String, Object>) coursesObj;
+
+                    if (courses.containsKey(name)) {
+                        player.sendMessage("§e⚠ A course named '" + name + "' already exists!");
+                        player.sendMessage("§7Use a different name, or delete it first.");
+                        return true;
+                    }
+                }
+
+                // Create the course
+                plugin.getDataManager().setNested("courses." + name, new HashMap<>());
+                plugin.setEditingCourse(player, name);
+
+                player.sendMessage("§a✅ Course '" + name + "' created successfully and set as your active course!");
                 break;
 
-            default:
-                player.sendMessage("Unknown subcommand.");
-                break;
         }
 
 
