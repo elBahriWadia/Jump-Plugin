@@ -1,0 +1,10 @@
+name: JumpPlugin
+version: '1.0-SNAPSHOT'
+main: org.jumpplugin.JumpPlugin
+api-version: '1.21'
+commands:
+    jump:
+        description: Commande principale du plugin Jump
+        usage: /<command> <create|setstart|setcheckpoint|setend|start|stop|settime|leaderboard>
+        permission: jumppliguin.jump
+        aliases: [j, parkour]
