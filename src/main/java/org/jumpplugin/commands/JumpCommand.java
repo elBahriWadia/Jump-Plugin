@@ -87,8 +87,44 @@ public class JumpCommand implements CommandExecutor {
 
                 plugin.getDataManager().setNested("courses." + course + ".start", locMap);
 
-                player.sendMessage("✅ Start point set for course '" + course + "'!");
+                player.sendMessage("Start point set for course '" + course + "'!");
                 break;
+
+            case "setcheckpoint":
+
+                if (args.length != 2) {
+                    player.sendMessage("Usage: /jump setcheckpoint <id>");
+                    return true;
+                }
+
+                String checkpointId = args[1];
+                if (!checkpointId.matches("\\d+")) {
+                    player.sendMessage("The checkpoint ID must be a number!");
+                    return true;
+                }
+
+                String currentCourse = plugin.getEditingCourse(player);
+                if (currentCourse == null) {
+                    player.sendMessage("You haven’t selected or created a course yet!");
+                    player.sendMessage("Use /jump create <name>§7 first.");
+                    return true;
+                }
+
+                Location locCp = player.getLocation();
+                Map<String, Object> cpLocMap = new HashMap<>();
+                cpLocMap.put("world", locCp.getWorld().getName());
+                cpLocMap.put("x", locCp.getX());
+                cpLocMap.put("y", locCp.getY());
+                cpLocMap.put("z", locCp.getZ());
+
+                plugin.getDataManager().setNested("courses." + currentCourse + ".checkpoints." + checkpointId, cpLocMap);
+
+                player.sendMessage(String.format(
+                        "Checkpoint %s set for course %s at [%.1f, %.1f, %.1f]",
+                        checkpointId, currentCourse, locCp.getX(), locCp.getY(), locCp.getZ()
+                ));
+                break;
+
 
         }
 
