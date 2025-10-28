@@ -87,7 +87,10 @@ public class JumpCommand implements CommandExecutor {
 
                 plugin.getDataManager().setNested("courses." + course + ".start", locMap);
 
-                player.sendMessage("Start point set for course '" + course + "'!");
+                player.sendMessage(String.format(
+                        "Start point set for %s at [%.1f, %.1f, %.1f]",
+                        course, loc.getX(), loc.getY(), loc.getZ()
+                ));
                 break;
 
             case "setcheckpoint":
@@ -122,6 +125,35 @@ public class JumpCommand implements CommandExecutor {
                 player.sendMessage(String.format(
                         "Checkpoint %s set for course %s at [%.1f, %.1f, %.1f]",
                         checkpointId, currentCourse, locCp.getX(), locCp.getY(), locCp.getZ()
+                ));
+                break;
+
+            case "setend":
+
+                if (args.length > 1) {
+                    player.sendMessage("Usage: /jump setend");
+                    return true;
+                }
+
+                String courseEnd = plugin.getEditingCourse(player);
+                if (courseEnd == null) {
+                    player.sendMessage("You haven’t selected or created a course yet!");
+                    player.sendMessage("Use /jump create <name> first.");
+                    return true;
+                }
+
+                Location locEnd = player.getLocation();
+                Map<String, Object> endLocMap = new HashMap<>();
+                endLocMap.put("world", locEnd.getWorld().getName());
+                endLocMap.put("x", locEnd.getX());
+                endLocMap.put("y", locEnd.getY());
+                endLocMap.put("z", locEnd.getZ());
+
+                plugin.getDataManager().setNested("courses." + courseEnd + ".end", endLocMap);
+
+                player.sendMessage(String.format(
+                        "End point set for %s at [%.1f, %.1f, %.1f]",
+                        courseEnd, locEnd.getX(), locEnd.getY(), locEnd.getZ()
                 ));
                 break;
 
