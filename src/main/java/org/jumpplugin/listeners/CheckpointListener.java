@@ -2,6 +2,7 @@ package org.jumpplugin.listeners;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -59,7 +60,7 @@ public class CheckpointListener implements Listener {
         }
 
         // --- Fall detection (example Y threshold = 40) ---
-        double fallY = 40.0;
+        double fallY = 188.5;
         if (player.getLocation().getY() < fallY) {
             int lastId = session.getLastCheckpointId();
             Location tpLoc;
@@ -87,5 +88,30 @@ public class CheckpointListener implements Listener {
             player.teleport(tpLoc);
             player.sendMessage("§cYou fell! Returned to your last checkpoint.");
         }
+
+        // --- End detection ---
+        Map<String, Object> endData = (Map<String, Object>)
+                plugin.getDataManager().getNested("courses." + courseName + ".end");
+
+        if (endData != null) {
+            Location endLoc = new Location(
+                    Bukkit.getWorld((String) endData.get("world")),
+                    ((Number) endData.get("x")).doubleValue(),
+                    ((Number) endData.get("y")).doubleValue(),
+                    ((Number) endData.get("z")).doubleValue()
+            );
+
+            // check if player is close enough to the end (within 1.5 blocks)
+            if (player.getLocation().distance(endLoc) < 1.5) {
+                // session end logic
+                plugin.getSessionManager().endSession(player);
+                player.getInventory().remove(Material.COMPASS);
+                player.sendMessage("§a🏁 Congratulations! You’ve completed the jump course §e" + courseName + "§a!");
+                player.sendMessage(String.format("§aFinal Score: §e%d §7points | §aCheckpoints Reached: §e#%d",
+                        session.getScore(), session.getLastCheckpointId()));
+            }
+        }
+
+
     }
 }

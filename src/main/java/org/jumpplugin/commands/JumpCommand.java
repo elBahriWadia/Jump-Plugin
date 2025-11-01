@@ -1,11 +1,16 @@
 package org.jumpplugin.commands;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.jumpplugin.JumpPlugin;
+import org.jumpplugin.sessions.PlayerSession;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -155,6 +160,78 @@ public class JumpCommand implements CommandExecutor {
                         "End point set for %s at [%.1f, %.1f, %.1f]",
                         courseEnd, locEnd.getX(), locEnd.getY(), locEnd.getZ()
                 ));
+                break;
+
+            case "start":
+                // Make sure player gave a course name
+                if (args.length != 2) {
+                    player.sendMessage("§c⚠ Incorrect usage!");
+                    player.sendMessage("§7Usage: §e/jump start <course>");
+                    return true;
+                }
+
+                String courseToStart = args[1].toLowerCase();
+
+                // Verify that course exists in JSON
+                Object courseObj = plugin.getDataManager().getNested("courses." + courseToStart);
+                if (courseObj == null) {
+                    player.sendMessage("§c❌ No course found with name '" + courseToStart + "'.");
+                    return true;
+                }
+
+                // Start session for this player
+                plugin.getSessionManager().startSession(player, courseToStart);
+                player.sendMessage("§a✅ Jump challenge started for course §e" + courseToStart + "§a!");
+
+                // Give the compass (return-to-checkpoint tool)
+                ItemStack compass = new ItemStack(Material.COMPASS);
+                ItemMeta meta = compass.getItemMeta();
+                meta.setDisplayName("§eReturn to Checkpoint");
+                compass.setItemMeta(meta);
+                player.getInventory().addItem(compass);
+
+                // Teleport player to the start point
+                Map<String, Object> startData = (Map<String, Object>)
+                        plugin.getDataManager().getNested("courses." + courseToStart + ".start");
+                if (startData == null) {
+                    player.sendMessage("§c⚠ This course has no start point set!");
+                    return true;
+                }
+
+                Location startLoc = new Location(
+                        Bukkit.getWorld((String) startData.get("world")),
+                        ((Number) startData.get("x")).doubleValue(),
+                        ((Number) startData.get("y")).doubleValue(),
+                        ((Number) startData.get("z")).doubleValue()
+                );
+                player.teleport(startLoc);
+
+                player.sendMessage("§bTeleported to start location. Good luck!");
+                break;
+
+            case "end":
+                if (args.length > 1) {
+                    player.sendMessage("§c⚠ Incorrect usage!");
+                    player.sendMessage("§7Usage: §e/jump end");
+                    return true;
+                }
+
+                PlayerSession currentSession = plugin.getSessionManager().getSession(player);
+                if (currentSession == null) {
+                    player.sendMessage("§c❌ You are not currently in a jump session.");
+                    return true;
+                }
+
+                plugin.getSessionManager().endSession(player);
+
+                player.sendMessage(String.format(
+                        "§a🏁 Jump challenge ended! You reached checkpoint §e#%d§a and earned §e%d§a points.",
+                        currentSession.getLastCheckpointId(),
+                        currentSession.getScore()
+                ));
+
+                // Optionally remove compass from inventory
+                player.getInventory().remove(Material.COMPASS);
                 break;
 
 

@@ -4,6 +4,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jumpplugin.commands.JumpCommand;
 import org.jumpplugin.listeners.CheckpointListener;
+import org.jumpplugin.listeners.CompassListener;
 import org.jumpplugin.managers.DataManager;
 import org.jumpplugin.managers.SessionManager;
 
@@ -39,6 +40,7 @@ public final class JumpPlugin extends JavaPlugin {
 
         this.getCommand("jump").setExecutor(new JumpCommand(this));
         getServer().getPluginManager().registerEvents(new CheckpointListener(this), this);
+        getServer().getPluginManager().registerEvents(new CompassListener(this), this);
     }
 
     public DataManager getDataManager() {
