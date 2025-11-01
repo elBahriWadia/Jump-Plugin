@@ -75,6 +75,26 @@ public class DataManager {
         saveData();
     }
 
+    public Object getNested(String path) {
+        loadData();
+
+        String[] parts = path.split("\\.");
+        Map<String, Object> current = data;
+
+        for (int i = 0; i < parts.length - 1; i++) {
+            String part = parts[i];
+            Object next = current.get(part);
+
+            if (!(next instanceof Map)) {
+                return null;
+            }
+
+            current = (Map<String, Object>) next;
+        }
+
+        return current.get(parts[parts.length - 1]);
+    }
+
     public void set(String key, Object value) {
         // make sure we always have up-to-date data before writing
         loadData();
